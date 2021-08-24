@@ -1,0 +1,282 @@
+#include<fstream.h>
+#include<iostream.h>
+#include<conio.h>
+#include<string.h>
+#include<stdio.h>
+#include<dos.h>
+
+
+void showcand();
+void vote_ctr(int);
+void show_result();
+
+char cad[5][20]={"JAMES TAYLOR","LISA DANISH","WES STANLEY","EDWARD GELLER","RACHEL COOPER"};
+
+int vote;
+int m=0;
+int cad_vote[5];
+int static count_voter=0;
+float cad_percent[5]={0,0,0,0,0};
+
+
+void showcand()
+ {
+  for(int i=0;i<5;i++)
+   {
+    cout<<endl<<i+1<<". ";
+    puts(cad[i]);
+   }
+ }
+
+
+void vote_ctr(int vote)
+{
+	       switch(vote)
+	       {
+			case 1: cad_vote[0]++; break;
+			case 2: cad_vote[1]++; break;
+			case 3: cad_vote[2]++; break;
+			case 4: cad_vote[3]++; break;
+			case 5: cad_vote[4]++; break;
+
+	       }
+	     }
+
+
+
+
+class user {
+	    char pass[20];
+	   public:
+	    char usrnam[20];
+	    int flag;
+	    int vote_cad;
+	    user()
+	     {
+	      flag=0;
+	      vote_cad=0;
+	     }
+	    void newuser()
+	     {
+	      cout<<"\nENTER YOUR DETAILS\n ";
+	      cout<<"USERNAME : ";
+	      gets(usrnam);
+	      cout<<"\nPASSWORD : ";
+	      gets(pass);
+	     }
+	    void tovote()
+	     {
+	      if(flag!=1)
+	       {
+		flag=1;
+		count_voter++;
+		showcand();
+		cout<<"ENTER OPTION";
+		cin>>vote_cad;
+		cout<<"YOU HAVE VOTED FOR CANDIDATE : "<<vote_cad;
+		vote_ctr(vote_cad);
+
+	       }
+	      else
+	       cout<<"YOU HAVE ALREADY CAST YOUR VOTE ";
+	     }
+	    void showdetail()
+	     {
+	      cout<<"THE USER DEATAILS ARE AS FOLLOWS\n";
+	      cout<<"USERNAME            : ";
+	      puts(usrnam);
+	      cout<<endl;
+	      cout<<"CANDIDATE VOTED FOR : ";
+	      if(flag==0)
+	       cout<<"none";
+	      else
+	       cout<<vote_cad;
+	     }
+	    void changepass()
+	     {
+	      char nwpass[20];
+	      char nwpasscfrm[20];
+	      cout<<"ENTER THE NEW PASSWORD   : ";
+	      gets(nwpass);
+	      cout<<"CONFIRM THE NEW PASSWORD : ";
+	      gets(nwpasscfrm);
+	      if(strcmp(nwpass,nwpasscfrm)==0)
+	       {
+		strcpy(pass,nwpass);
+		cout<<"\nPASSWORD CHANGED!";
+	       }
+	      else
+	       {
+		cout<<"\nTHE TWO ENTERED PASSWORDS DO NOT MATCH!";
+	       }
+	     }
+	  };
+
+
+
+ void show_result()
+ {
+   clrscr();
+   int pos=0;
+   int star=0;
+   cout<<"THE CURRENT RESULT FOR THE ELECTION IS:"<<endl;
+   cout<<endl;
+   for(int p=0;p<5;p++)
+    {
+     cad_percent[p]=(cad_vote[p]*100)/count_voter;
+     star=cad_percent[p]/10;
+     cout<<cad[p];
+     for(int i=0;i<star;i++)
+      {
+       cout<<" * ";
+      }
+     cout<<" "<<cad_percent[p]<<"%"<<endl;
+    }
+   cout<<endl;
+
+
+   for( p=1;p<5;p++)
+    {
+	  if(cad_vote[pos]<cad_vote[p])
+      pos=p;
+    }
+
+
+  cout<<"THE WINNER IS:";
+   puts(cad[pos]);
+ }
+
+
+
+
+int main()
+ {
+  clrscr();
+  user u1;
+  fstream usr;
+  usr.open("USER.dat",ios::binary|ios::in|ios::out);
+  for(int i=0;i<4;i++)
+   {
+    u1.newuser();
+    usr.write((char*)&u1,sizeof(u1));
+   }
+  usr.close();
+  int choice;
+  mainmenu:
+    clrscr();
+    usr.open("USER.dat",ios::binary|ios::in|ios::out|ios::app);
+    usr.seekp(0,ios::beg);
+    char nam[20];
+    char pass[20];
+  screen:
+    cout<<"****** WELCOME TO THE POLL STATION ******\n";
+    cout<<"ENTER USERNAME : ";
+    gets(nam);
+    cout<<"ENTER PASSWORD : ";
+    gets(pass);
+    int f=0;
+    while(!usr.eof())
+     {
+      usr.read((char*)&u1,sizeof(u1));
+      if(strcmp(u1.usrnam,nam)==0)
+       { f=1;
+	goto login;
+	break;
+       }
+	}
+if (f==0) cout<<"\nLOGIN UNSUCCESSFUL\n";
+
+
+   login:
+      int optn,mainmenu,p,pos;
+      cout<<"\n LOGIN SUCCESSFUL!";
+      previous:
+      cout<<"\nENTER OPTION";
+      cout<<"\n1. TO VIEW YOUR PROFILE ";
+      cout<<"\n2. TO VOTE FOR THE POLL ";
+      cout<<"\n3. TO VIEW THE RESULTS";
+      cout<<"\n4. TO CHANGE YOUR PASSWORD";
+      cout<<"\n5. TO LOG OUT";
+      cin>>optn;
+      if(optn==1)
+       {
+	clrscr();
+	u1.showdetail();
+	cout<<"\nENTER 1 TO GO TO THE PREVIOUS MENU ";
+	cin>>m;
+	if(m==1)
+	 goto previous;
+      }
+     else if(optn==2)
+      {
+       clrscr();
+       usr.seekg(0,ios::beg);
+       while(!usr.eof())
+	{
+	 pos=usr.tellg();
+	 usr.read((char*)&u1,sizeof(u1));
+	 if(strcmp(u1.usrnam,nam)==0)
+	  {
+	   u1.tovote();
+	   usr.seekg(pos);
+	   usr.write((char*)&u1,sizeof(u1));
+	   break;
+	  }
+       }
+       cout<<"\nENTER 1 TO GO TO THE PREVIOUS MENU ";
+       cin>>m;
+       if(m==1)
+       goto previous;
+      }
+     else if(optn==3)
+      {
+       show_result();
+       cout<<"\nENTER 1 TO GO TO THE PREVIOUS MENU ";
+       cin>>m;
+       if(m==1)
+       goto previous;
+      }
+     else if(optn==4)
+      {
+       clrscr();
+       u1.changepass();
+       usr.seekg(0,ios::beg);
+       while(!usr.eof())
+	{
+	 pos=usr.tellg();
+	 usr.read((char*)&u1,sizeof(u1));
+	 if(strcmp(u1.usrnam,nam)==0)
+	  {
+	   u1.changepass();
+	   usr.seekg(pos);
+	   usr.write((char*)&u1,sizeof(u1));
+	   break;
+	  }
+       }
+       cout<<"\nENTER 1 TO GO TO THE PREVIOUS MENU ";
+       cin>>m;
+       if(m==1)
+       goto previous;
+      }
+     else if(optn==5)
+      {
+       int o;
+       cout<<"ENTER 1 FOR THE LOGIN SCREEN "<<endl;
+       cout<<"OR"<<endl;
+       cout<<"ENTER 2 TO QUIT"<<endl;
+       cin>>o;
+       if(o==1)
+	goto screen;
+	if(o==2)
+       goto leave;
+      }
+
+  leave:
+  usr.close();
+  getch();
+ }
+
+
+
+
+
